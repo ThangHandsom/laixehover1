@@ -6,7 +6,7 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
-    <title>Gọi là tới - App lái xe hộ</title>
+    <title>Gọi là tới - Hệ sinh thái</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,602 +37,360 @@
     </script>
 
     <style>
-      /* Custom map background pattern */
       .bg-map-pattern {
         background-image:
           linear-gradient(#999 1px, transparent 1px),
           linear-gradient(90deg, #999 1px, transparent 1px);
         background-size: 20px 20px;
       }
-
-      /* Hide scrollbar for clean UI */
       .no-scrollbar::-webkit-scrollbar {
         display: none;
       }
       .no-scrollbar {
-        -ms-overflow-style: none; /* IE and Edge */
-        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none;
+        scrollbar-width: none;
       }
-
-      /* Smooth driver movement simulation */
-      .driver-marker {
+      .marker-transition {
         transition:
-          top 3s ease-in-out,
-          left 3s ease-in-out;
+          top 1.5s linear,
+          left 1.5s linear;
       }
     </style>
   </head>
   <body
-    class="min-h-screen bg-gray-900 flex justify-center items-center font-sans text-gray-800 m-0 p-0"
+    class="min-h-screen bg-gray-900 font-sans text-gray-800 m-0 p-0 flex justify-center items-center overflow-hidden"
   >
-    <!-- Mobile Device Frame -->
+    <!-- ========================================== -->
+    <!-- 0. PORTAL ROLE SELECTOR -->
+    <!-- ========================================== -->
     <div
-      class="w-full max-w-[400px] h-[100dvh] max-h-[850px] bg-white relative sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col sm:border-8 border-gray-800"
+      id="app-portal"
+      class="fixed inset-0 bg-gray-900 z-[100] flex flex-col items-center justify-center p-6"
     >
-      <!-- HEADER (Shared) -->
+      <div
+        class="w-24 h-24 bg-red-800 rounded-2xl flex items-center justify-center mb-8 shadow-lg shadow-red-900/50"
+      >
+        <i data-lucide="car" class="text-white w-12 h-12"></i>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">
+        Hệ sinh thái "Gọi là tới"
+      </h1>
+      <p class="text-gray-400 mb-10 text-center max-w-md">
+        Vui lòng chọn vai trò để trải nghiệm ứng dụng mô phỏng.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-4 w-full max-w-2xl">
+        <!-- Customer -->
+        <button
+          onclick="launchApp('customer')"
+          class="flex-1 bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 hover:scale-105 transition group cursor-pointer border-4 border-transparent hover:border-red-800"
+        >
+          <div
+            class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-800 group-hover:bg-red-800 group-hover:text-white transition"
+          >
+            <i data-lucide="user" class="w-8 h-8"></i>
+          </div>
+          <div class="text-center">
+            <h3 class="font-bold text-xl text-gray-800">Khách hàng</h3>
+            <p class="text-sm text-gray-500 mt-2">
+              Đặt xe, theo dõi, thanh toán
+            </p>
+          </div>
+        </button>
+
+        <!-- Driver -->
+        <button
+          onclick="launchApp('driver')"
+          class="flex-1 bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 hover:scale-105 transition group cursor-pointer border-4 border-transparent hover:border-blue-600"
+        >
+          <div
+            class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition"
+          >
+            <i data-lucide="car" class="w-8 h-8"></i>
+          </div>
+          <div class="text-center">
+            <h3 class="font-bold text-xl text-gray-800">Tài xế</h3>
+            <p class="text-sm text-gray-500 mt-2">
+              Nhận chuyến, điều hướng, thu nhập
+            </p>
+          </div>
+        </button>
+
+        <!-- Admin -->
+        <button
+          onclick="launchApp('admin')"
+          class="flex-1 bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center gap-4 hover:scale-105 transition group cursor-pointer border-4 border-transparent hover:border-gray-800"
+        >
+          <div
+            class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-800 group-hover:bg-gray-800 group-hover:text-white transition"
+          >
+            <i data-lucide="layout-dashboard" class="w-8 h-8"></i>
+          </div>
+          <div class="text-center">
+            <h3 class="font-bold text-xl text-gray-800">Admin Dashboard</h3>
+            <p class="text-sm text-gray-500 mt-2">
+              Quản lý hệ thống (Giao diện Web)
+            </p>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MOBILE DEVICE FRAME (For Customer & Driver) -->
+    <!-- ========================================== -->
+    <div
+      id="mobile-frame"
+      class="hidden w-full max-w-[400px] h-[100dvh] max-h-[850px] bg-white relative sm:rounded-[2rem] shadow-2xl overflow-hidden flex flex-col sm:border-8 border-gray-800"
+    >
+      <!-- HEADER -->
       <header
-        id="app-header"
-        class="bg-red-800 text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-md hidden"
+        id="mobile-header"
+        class="bg-red-800 text-white p-4 flex items-center justify-between sticky top-0 z-50 shadow-md"
       >
         <button
           id="header-back"
-          class="p-1 hover:bg-red-700 rounded-full transition hidden"
-          onclick="goBack()"
+          class="p-1 hover:bg-white/20 rounded-full transition"
+          onclick="goBackMobile()"
         >
           <i data-lucide="chevron-left" class="w-6 h-6"></i>
         </button>
-        <div id="header-placeholder-left" class="w-6 h-6"></div>
+        <button
+          id="header-home"
+          class="p-1 hover:bg-white/20 rounded-full transition hidden"
+          onclick="logout()"
+        >
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
 
-        <div class="flex items-center gap-2 font-bold text-lg">
-          <i id="header-icon" data-lucide="car" class="w-6 h-6"></i>
+        <div
+          class="flex items-center gap-2 font-bold text-lg absolute left-1/2 -translate-x-1/2"
+        >
+          <i id="header-icon" data-lucide="car" class="w-5 h-5 hidden"></i>
           <span id="header-title">Gọi là tới</span>
         </div>
 
-        <div class="w-6 h-6"></div>
+        <div class="w-6 h-6 flex items-center justify-end">
+          <i
+            id="header-sos"
+            data-lucide="shield-alert"
+            class="w-5 h-5 text-yellow-400 hidden cursor-pointer"
+            onclick="alert('Đã gửi cảnh báo SOS đến Trung tâm an toàn!')"
+          ></i>
+        </div>
       </header>
 
-      <!-- MAIN CONTENT AREA -->
-      <main class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col">
-        <!-- 1. LOGIN SCREEN -->
-        <div
-          id="screen-login"
-          class="flex-1 flex flex-col p-6 bg-white justify-center items-center h-full"
-        >
-          <div
-            class="w-24 h-24 bg-red-800 rounded-full flex items-center justify-center mb-6 shadow-lg"
-          >
-            <i data-lucide="car" class="text-white w-12 h-12"></i>
-          </div>
-          <h1 class="text-3xl font-bold text-red-800 mb-2">Gọi là tới</h1>
-          <p class="text-gray-500 mb-8 text-center">
-            Ứng dụng gọi tài xế lái xe hộ chuyên nghiệp, an toàn 24/7
-          </p>
-
-          <div class="w-full space-y-4">
-            <input
-              type="text"
-              placeholder="Số điện thoại hoặc Email"
-              class="w-full p-4 border border-gray-300 rounded-xl focus:outline-none focus:border-red-800 focus:ring-1 focus:ring-red-800"
-            />
-            <button
-              onclick="navigateTo('home')"
-              class="w-full bg-red-800 text-white p-4 rounded-xl font-bold text-lg shadow-md active:scale-95 transition"
-            >
-              Đăng nhập / Đăng ký
-            </button>
-          </div>
-          <p class="text-xs text-gray-400 mt-6 text-center">
-            Bằng việc tiếp tục, bạn đồng ý với Điều khoản sử dụng của chúng tôi.
-          </p>
-        </div>
-
-        <!-- 2. HOME SCREEN -->
-        <div
-          id="screen-home"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="flex-1 relative bg-gray-200 overflow-hidden h-full">
-            <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
-            <!-- User Location -->
-            <div
-              class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-            >
-              <div
-                class="w-12 h-12 bg-red-800/20 rounded-full animate-ping absolute"
-              ></div>
-              <div
-                class="w-4 h-4 bg-red-800 rounded-full border-2 border-white z-10 shadow-md"
-              ></div>
-              <div
-                class="bg-white text-xs px-2 py-1 rounded shadow mt-2 font-semibold"
-              >
-                Vị trí của bạn
-              </div>
-            </div>
-
-            <!-- Bottom UI Overlay -->
-            <div
-              class="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-white via-white to-transparent pt-20 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)]"
-            >
-              <h2 class="text-xl font-bold mb-4 text-gray-800">
-                Bạn muốn đi đâu?
-              </h2>
-              <button
-                onclick="navigateTo('booking')"
-                class="w-full bg-red-800 text-white p-4 rounded-full font-bold text-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition hover:bg-red-900"
-              >
-                <i data-lucide="car" class="w-6 h-6"></i> Tìm tài xế ngay
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. BOOKING SCREEN -->
-        <div
-          id="screen-booking"
-          class="flex-1 flex flex-col h-full bg-white hidden"
-        >
-          <div class="p-4 flex-1 overflow-y-auto">
-            <div class="space-y-4 relative">
-              <!-- Connecting Line -->
-              <div
-                class="absolute left-[23px] top-[24px] bottom-[24px] w-0.5 bg-gray-300 z-0"
-              ></div>
-
-              <div class="relative z-10 flex items-center gap-3">
-                <div
-                  class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-800 shrink-0"
-                >
-                  <i data-lucide="map-pin" class="w-4 h-4"></i>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Điểm đón (Vị trí hiện tại)"
-                  class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-red-800 outline-none transition"
-                />
-              </div>
-
-              <div class="relative z-10 flex items-center gap-3">
-                <div
-                  class="w-8 h-8 rounded-full bg-red-800 flex items-center justify-center text-white shrink-0"
-                >
-                  <i data-lucide="navigation" class="w-4 h-4"></i>
-                </div>
-                <input
-                  type="text"
-                  placeholder="Bạn muốn đến đâu?"
-                  class="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-red-800 outline-none transition"
-                />
-              </div>
-            </div>
-
-            <div class="mt-6">
-              <h3 class="font-bold text-gray-800 mb-3">Loại xe của bạn</h3>
-              <div class="grid grid-cols-2 gap-3" id="car-types">
-                <!-- JS will populate -->
-              </div>
-            </div>
-
-            <div class="mt-6">
-              <h3 class="font-bold text-gray-800 mb-3">Thời gian</h3>
-              <div class="flex gap-3" id="time-options">
-                <!-- JS will populate -->
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="p-4 bg-white border-t border-gray-100 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]"
-          >
-            <button
-              onclick="navigateTo('driver_list')"
-              class="w-full bg-red-800 text-white p-4 rounded-full font-bold text-lg shadow-md active:scale-95 transition flex items-center justify-center"
-            >
-              Tìm tài xế ngay
-            </button>
-          </div>
-        </div>
-
-        <!-- 4. DRIVER LIST SCREEN -->
-        <div
-          id="screen-driver_list"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="p-4 flex-1 overflow-y-auto">
-            <p class="text-sm text-gray-500 mb-4 flex items-center gap-2">
-              <span
-                class="w-2 h-2 rounded-full bg-green-500 animate-pulse block"
-              ></span>
-              Đã tìm thấy <span id="driver-count">0</span> tài xế gần bạn
-            </p>
-            <div class="space-y-4" id="driver-list-container">
-              <!-- Drivers injected by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- 5. TRACKING SCREEN -->
-        <div
-          id="screen-tracking"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="flex-1 relative min-h-[50%] bg-gray-200 overflow-hidden">
-            <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
-            <!-- User Location -->
-            <div
-              class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
-            >
-              <div
-                class="w-4 h-4 bg-red-800 rounded-full border-2 border-white z-10 shadow-md"
-              ></div>
-            </div>
-            <!-- Driver Location -->
-            <div
-              id="tracking-driver-marker"
-              class="driver-marker absolute top-[70%] left-[30%] flex flex-col items-center"
-            >
-              <div
-                class="w-6 h-6 bg-green-500 rounded-full border-2 border-white z-10 shadow-md flex items-center justify-center"
-              >
-                <i data-lucide="car" class="text-white w-3 h-3"></i>
-              </div>
-              <div
-                class="bg-white text-[10px] px-1 py-0.5 rounded shadow mt-1 font-bold"
-              >
-                Tài xế
-              </div>
-            </div>
-          </div>
-
-          <div
-            class="bg-white rounded-t-3xl p-5 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] relative z-20 shrink-0"
-          >
-            <div class="flex justify-between items-center mb-4">
-              <h2 id="tracking-status" class="text-xl font-bold text-gray-800">
-                Tài xế đang đến...
-              </h2>
-              <div
-                id="tracking-plate"
-                class="px-3 py-1 bg-gray-100 rounded-full text-sm font-semibold text-gray-700"
-              ></div>
-            </div>
-
-            <div
-              class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100"
-            >
-              <img
-                id="tracking-avatar"
-                src=""
-                alt="Driver"
-                class="w-16 h-16 rounded-full shadow-sm object-cover"
-              />
-              <div class="flex-1">
-                <h3
-                  id="tracking-name"
-                  class="font-bold text-lg text-gray-800"
-                ></h3>
-                <div class="flex items-center gap-1 text-sm text-gray-500">
-                  <i
-                    data-lucide="star"
-                    class="w-4 h-4 text-yellow-500 fill-yellow-500"
-                  ></i>
-                  <span id="tracking-rating"></span>
-                </div>
-              </div>
-              <button
-                class="w-12 h-12 rounded-full bg-red-800 text-white flex items-center justify-center shadow-md hover:bg-red-900 transition"
-              >
-                <i data-lucide="phone" class="w-5 h-5"></i>
-              </button>
-            </div>
-
-            <div class="flex gap-3">
-              <button
-                onclick="cancelRide()"
-                class="flex-1 py-3 bg-red-50 text-red-500 font-bold rounded-xl transition hover:bg-red-100"
-              >
-                Hủy chuyến
-              </button>
-              <button
-                id="btn-finish-ride"
-                onclick="navigateTo('payment')"
-                class="flex-[2] py-3 bg-red-800 text-white font-bold rounded-xl shadow-md transition hover:bg-red-900"
-              >
-                Giả lập: Đã đến nơi
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 6. PAYMENT SCREEN -->
-        <div
-          id="screen-payment"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="p-5 flex-1 overflow-y-auto">
-            <div
-              class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-6 text-center"
-            >
-              <div
-                class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 text-green-600"
-              >
-                <i data-lucide="check-circle-2" class="w-8 h-8"></i>
-              </div>
-              <h2 class="text-xl font-bold text-gray-800 mb-1">
-                Chuyến đi hoàn tất
-              </h2>
-              <p class="text-sm text-gray-500 mb-4">
-                Cảm ơn bạn đã sử dụng dịch vụ
-              </p>
-
-              <div
-                id="payment-price"
-                class="text-4xl font-black text-red-800 mb-2"
-              >
-                0đ
-              </div>
-              <p class="text-sm text-gray-500">
-                Quãng đường: <span id="payment-distance"></span> • Thời gian: 25
-                phút
-              </p>
-            </div>
-
-            <h3 class="font-bold text-gray-800 mb-3">Phương thức thanh toán</h3>
-            <div class="space-y-3" id="payment-methods">
-              <!-- JS injected -->
-            </div>
-          </div>
-          <div class="p-4 bg-white border-t border-gray-100 shadow-md">
-            <button
-              onclick="navigateTo('rating')"
-              class="w-full bg-red-800 text-white p-4 rounded-xl font-bold text-lg shadow-md active:scale-95 transition"
-            >
-              Xác nhận thanh toán
-            </button>
-          </div>
-        </div>
-
-        <!-- 7. RATING SCREEN -->
-        <div
-          id="screen-rating"
-          class="flex-1 flex flex-col h-full bg-white justify-center items-center p-6 text-center hidden"
-        >
-          <img
-            id="rating-avatar"
-            src=""
-            alt="Driver"
-            class="w-24 h-24 rounded-full shadow-lg mb-4 object-cover"
-          />
-          <h2 class="text-2xl font-bold text-gray-800 mb-2">Đánh giá tài xế</h2>
-          <p class="text-gray-500 mb-8">
-            Chuyến đi của bạn với
-            <span id="rating-name" class="font-bold"></span> thế nào?
-          </p>
-
-          <div class="flex gap-2 mb-8" id="star-rating-container">
-            <!-- JS Injected Stars -->
-          </div>
-
-          <textarea
-            placeholder="Để lại nhận xét của bạn (không bắt buộc)"
-            class="w-full p-4 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-red-800 outline-none transition mb-8 resize-none h-24"
-          ></textarea>
-
-          <button
-            onclick="submitRating()"
-            class="w-full bg-red-800 text-white p-4 rounded-xl font-bold text-lg shadow-md active:scale-95 transition"
-          >
-            Gửi đánh giá
-          </button>
-          <button
-            onclick="submitRating()"
-            class="mt-4 text-gray-500 font-medium hover:text-gray-800"
-          >
-            Bỏ qua
-          </button>
-        </div>
-
-        <!-- 8. HISTORY SCREEN -->
-        <div
-          id="screen-history"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div
-            class="p-4 flex-1 overflow-y-auto space-y-4"
-            id="history-list-container"
-          >
-            <!-- JS Injected -->
-          </div>
-        </div>
-
-        <!-- 9. HISTORY DETAIL SCREEN -->
-        <div
-          id="screen-history_detail"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="flex-1 overflow-y-auto" id="history-detail-container">
-            <!-- JS Injected -->
-          </div>
-        </div>
-
-        <!-- 10. ACCOUNT SCREEN -->
-        <div
-          id="screen-account"
-          class="flex-1 flex flex-col h-full bg-gray-50 hidden"
-        >
-          <div class="p-4 flex-1 overflow-y-auto">
-            <!-- Profile Info -->
-            <div
-              class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 mb-6"
-            >
-              <img
-                src="https://i.pravatar.cc/150?img=68"
-                alt="User Avatar"
-                class="w-16 h-16 rounded-full border-2 border-red-100 object-cover"
-              />
-              <div class="flex-1">
-                <h2 class="text-xl font-bold text-gray-800">Khách Hàng Demo</h2>
-                <p class="text-sm text-gray-500">0987 654 321</p>
-                <div
-                  class="inline-block mt-1 px-2 py-0.5 bg-red-50 text-red-800 text-xs font-semibold rounded-md border border-red-100"
-                >
-                  Thành viên Vàng
-                </div>
-              </div>
-              <button class="p-2 text-gray-400 hover:text-red-800 transition">
-                <i data-lucide="edit-2" class="w-5 h-5"></i>
-              </button>
-            </div>
-
-            <!-- Menu List -->
-            <div
-              class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6"
-            >
-              <button
-                class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition"
-              >
-                <div
-                  class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"
-                >
-                  <i data-lucide="credit-card" class="w-4 h-4"></i>
-                </div>
-                <span class="flex-1 text-left font-medium text-gray-700"
-                  >Phương thức thanh toán</span
-                >
-                <i
-                  data-lucide="chevron-right"
-                  class="w-5 h-5 text-gray-400"
-                ></i>
-              </button>
-              <button
-                class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition"
-              >
-                <div
-                  class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600"
-                >
-                  <i data-lucide="map-pin" class="w-4 h-4"></i>
-                </div>
-                <span class="flex-1 text-left font-medium text-gray-700"
-                  >Địa chỉ đã lưu</span
-                >
-                <i
-                  data-lucide="chevron-right"
-                  class="w-5 h-5 text-gray-400"
-                ></i>
-              </button>
-              <button
-                class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition"
-              >
-                <div
-                  class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600"
-                >
-                  <i data-lucide="shield" class="w-4 h-4"></i>
-                </div>
-                <span class="flex-1 text-left font-medium text-gray-700"
-                  >Bảo mật & Quyền riêng tư</span
-                >
-                <i
-                  data-lucide="chevron-right"
-                  class="w-5 h-5 text-gray-400"
-                ></i>
-              </button>
-              <button
-                class="w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition"
-              >
-                <div
-                  class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600"
-                >
-                  <i data-lucide="headphones" class="w-4 h-4"></i>
-                </div>
-                <span class="flex-1 text-left font-medium text-gray-700"
-                  >Trung tâm trợ giúp</span
-                >
-                <i
-                  data-lucide="chevron-right"
-                  class="w-5 h-5 text-gray-400"
-                ></i>
-              </button>
-            </div>
-
-            <!-- Logout Button -->
-            <button
-              onclick="logout()"
-              class="w-full bg-red-50 text-red-800 p-4 rounded-xl font-bold text-lg border border-red-200 active:scale-95 transition flex items-center justify-center gap-2 hover:bg-red-100"
-            >
-              <i data-lucide="log-out" class="w-5 h-5"></i>
-              Đăng xuất
-            </button>
-          </div>
-        </div>
+      <main
+        id="mobile-content"
+        class="flex-1 overflow-y-auto no-scrollbar relative flex flex-col bg-gray-50"
+      >
+        <!-- DYNAMIC CONTENT INJECTED HERE BY JS -->
       </main>
 
-      <!-- BOTTOM NAVIGATION (Shared) -->
+      <!-- BOTTOM NAVIGATION -->
       <nav
-        id="app-nav"
-        class="bg-white border-t border-gray-200 flex justify-around p-3 pb-safe sticky bottom-0 z-50 hidden"
+        id="mobile-nav"
+        class="bg-white border-t border-gray-200 flex justify-around p-3 pb-safe sticky bottom-0 z-50"
       >
-        <!-- Items injected by JS to handle active state -->
+        <!-- DYNAMIC NAV INJECTED HERE BY JS -->
       </nav>
     </div>
 
+    <!-- ========================================== -->
+    <!-- ADMIN DESKTOP FRAME -->
+    <!-- ========================================== -->
+    <div
+      id="admin-frame"
+      class="hidden w-full h-screen bg-gray-100 flex overflow-hidden"
+    >
+      <!-- Sidebar -->
+      <aside class="w-64 bg-gray-900 text-white flex flex-col">
+        <div class="p-5 flex items-center gap-3 border-b border-gray-800">
+          <div
+            class="w-8 h-8 bg-red-800 rounded flex items-center justify-center"
+          >
+            <i data-lucide="car" class="text-white w-5 h-5"></i>
+          </div>
+          <span class="font-bold text-xl tracking-wide">Admin Portal</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+          <button
+            onclick="renderAdmin('dashboard')"
+            id="nav-a-dashboard"
+            class="w-full flex items-center gap-3 p-3 rounded-lg bg-gray-800 text-white transition"
+          >
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+          </button>
+          <button
+            onclick="renderAdmin('users')"
+            id="nav-a-users"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          >
+            <i data-lucide="users" class="w-5 h-5"></i> Quản lý User
+          </button>
+          <button
+            onclick="renderAdmin('drivers')"
+            id="nav-a-drivers"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          >
+            <i data-lucide="car" class="w-5 h-5"></i> Quản lý Driver
+          </button>
+          <button
+            onclick="renderAdmin('rides')"
+            id="nav-a-rides"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          >
+            <i data-lucide="map" class="w-5 h-5"></i> Quản lý Chuyến
+          </button>
+          <button
+            onclick="renderAdmin('promotions')"
+            id="nav-a-promotions"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          >
+            <i data-lucide="tag" class="w-5 h-5"></i> Khuyến mãi
+          </button>
+          <button
+            onclick="renderAdmin('permissions')"
+            id="nav-a-permissions"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition"
+          >
+            <i data-lucide="shield" class="w-5 h-5"></i> Phân quyền
+          </button>
+        </nav>
+        <div class="p-4 border-t border-gray-800">
+          <button
+            onclick="logout()"
+            class="w-full flex items-center gap-3 p-3 rounded-lg text-red-400 hover:bg-red-900/50 transition"
+          >
+            <i data-lucide="log-out" class="w-5 h-5"></i> Đăng xuất
+          </button>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="flex-1 flex flex-col overflow-hidden">
+        <header
+          class="bg-white p-4 shadow-sm flex justify-between items-center z-10"
+        >
+          <h2 id="admin-header-title" class="text-xl font-bold text-gray-800">
+            Dashboard
+          </h2>
+          <div class="flex items-center gap-4">
+            <button class="p-2 text-gray-400 hover:text-gray-600">
+              <i data-lucide="bell" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-2">
+              <img
+                src="https://i.pravatar.cc/150?img=11"
+                class="w-8 h-8 rounded-full"
+              />
+              <span class="font-medium text-sm">Super Admin</span>
+            </div>
+          </div>
+        </header>
+        <main id="admin-content" class="flex-1 overflow-y-auto p-6 bg-gray-100">
+          <!-- Injected via JS -->
+        </main>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- JAVASCRIPT LOGIC -->
+    <!-- ========================================== -->
     <script>
-      // --- MOCK DATA ---
+      // --- GLOBAL STATE ---
+      let currentApp = null; // 'customer', 'driver', 'admin'
+      let navHistory = [];
+
+      // Mock Data
       const MOCK_DRIVERS = [
+        // Xe máy
         {
           id: 1,
           name: "Nguyễn Văn A",
+          type: "bike",
           rating: 4.9,
-          price: 200000,
-          eta: "3 phút",
-          plate: "30E-123.45",
-          distance: "2.5 km",
+          price: 50000,
+          eta: "2 phút",
+          plate: "29AA-123.45",
+          distance: "1.5 km",
           avatar: "https://i.pravatar.cc/150?img=11",
         },
         {
           id: 2,
           name: "Trần Thị B",
+          type: "bike",
           rating: 4.8,
-          price: 210000,
-          eta: "5 phút",
-          plate: "29A-678.90",
-          distance: "3.1 km",
+          price: 55000,
+          eta: "4 phút",
+          plate: "30B1-678.90",
+          distance: "2.1 km",
           avatar: "https://i.pravatar.cc/150?img=5",
         },
+        // Ô tô 4 chỗ (Sedan)
         {
           id: 3,
           name: "Lê Văn C",
+          type: "sedan",
           rating: 5.0,
           price: 190000,
-          eta: "2 phút",
+          eta: "3 phút",
           plate: "30F-555.55",
-          distance: "1.2 km",
+          distance: "2.2 km",
           avatar: "https://i.pravatar.cc/150?img=12",
         },
-      ];
-
-      const PAYMENT_METHODS = [
-        { id: "momo", name: "Ví MoMo", iconText: "M", color: "bg-pink-500" },
-        { id: "zalo", name: "ZaloPay", iconText: "Z", color: "bg-blue-500" },
         {
-          id: "card",
-          name: "Thẻ tín dụng / Ghi nợ",
-          iconNode: "credit-card",
-          color: "bg-gray-800",
+          id: 4,
+          name: "Nguyễn Văn A",
+          type: "sedan",
+          rating: 4.7,
+          price: 200000,
+          eta: "5 phút",
+          plate: "29C-999.99",
+          distance: "3.5 km",
+          avatar: "https://i.pravatar.cc/150?img=9",
+        }, // Trùng tên, khác người/xe
+        // Ô tô 7 chỗ (SUV)
+        {
+          id: 5,
+          name: "Hoàng Văn E",
+          type: "suv",
+          rating: 4.9,
+          price: 250000,
+          eta: "6 phút",
+          plate: "30G-777.88",
+          distance: "4.0 km",
+          avatar: "https://i.pravatar.cc/150?img=14",
         },
-      ];
-
-      const BOTTOM_TABS = [
-        { id: "home", icon: "home", label: "Home" },
-        { id: "booking", icon: "car", label: "Đặt xe" },
-        { id: "history", icon: "history", label: "Lịch sử" },
-        { id: "account", icon: "user", label: "Tài khoản" },
+        {
+          id: 6,
+          name: "Phạm Văn F",
+          type: "suv",
+          rating: 4.6,
+          price: 260000,
+          eta: "8 phút",
+          plate: "29H-111.22",
+          distance: "5.1 km",
+          avatar: "https://i.pravatar.cc/150?img=15",
+        },
+        // Xe sang (Luxury)
+        {
+          id: 7,
+          name: "Trịnh Tổng",
+          type: "luxury",
+          rating: 5.0,
+          price: 500000,
+          eta: "10 phút",
+          plate: "30K-888.88",
+          distance: "6.5 km",
+          avatar: "https://i.pravatar.cc/150?img=33",
+        },
       ];
 
       const MOCK_HISTORY = [
         {
           id: 101,
-          date: "10/05/2026",
+          date: "15/05/2026",
           time: "14:30",
           status: "completed",
           driverName: "Nguyễn Văn A",
@@ -643,11 +401,11 @@
           price: 200000,
           payment: "Ví MoMo",
           distance: "2.5 km",
-          carType: "Sedan",
+          carType: "Ô tô 4 chỗ",
         },
         {
           id: 102,
-          date: "08/05/2026",
+          date: "12/05/2026",
           time: "09:15",
           status: "cancelled",
           driverName: "Trần Thị B",
@@ -658,11 +416,11 @@
           price: 0,
           payment: "-",
           distance: "-",
-          carType: "SUV",
+          carType: "Ô tô 7 chỗ",
         },
         {
           id: 103,
-          date: "01/05/2026",
+          date: "08/05/2026",
           time: "22:00",
           status: "completed",
           driverName: "Lê Văn C",
@@ -673,414 +431,1176 @@
           price: 190000,
           payment: "Tiền mặt",
           distance: "5.2 km",
-          carType: "Hatchback",
+          carType: "Xe máy",
         },
       ];
 
-      // --- APP STATE ---
-      let currentScreen = "login";
-      let activeTab = "home";
-      let bookingData = { carType: "Sedan", time: "now" };
-      let selectedDriver = null;
-      let ratingValue = 0;
-      let trackingTimeout = null;
-      let activePayment = "momo";
-
       // --- CORE NAVIGATION ---
-      function navigateTo(screen, title = "Gọi là tới", backTarget = null) {
-        // Hide all screens
-        document.querySelectorAll("main > div").forEach((el) => {
-          el.style.display = "none";
-        });
+      window.logout = function () {
+        // Đã bỏ hàm confirm() vì môi trường sandbox thường block các popup mặc định của trình duyệt
+        // Ẩn tất cả frame hiện tại
+        document.getElementById("mobile-frame").classList.add("hidden");
+        document.getElementById("admin-frame").classList.add("hidden");
+        // Hiện lại portal chọn vai trò
+        document.getElementById("app-portal").classList.remove("hidden");
 
-        // Show target screen
-        document.getElementById(`screen-${screen}`).style.display = "flex";
-        currentScreen = screen;
+        // Reset state
+        currentApp = null;
+        navHistory = [];
+        if (document.getElementById("driver-toggle"))
+          document.getElementById("driver-toggle").checked = false;
+        driverOnline = false;
+      };
 
-        // Handle Header
-        const header = document.getElementById("app-header");
-        if (["login"].includes(screen)) {
-          header.style.display = "none";
+      function launchApp(appType) {
+        document.getElementById("app-portal").classList.add("hidden");
+        currentApp = appType;
+        navHistory = [];
+
+        if (appType === "admin") {
+          document.getElementById("admin-frame").classList.remove("hidden");
+          renderAdmin("dashboard");
         } else {
-          header.style.display = "flex";
-          document.getElementById("header-title").innerText = title;
-
-          const backBtn = document.getElementById("header-back");
-          const placeholder = document.getElementById(
-            "header-placeholder-left",
-          );
-          const icon = document.getElementById("header-icon");
-
-          if (backTarget) {
-            backBtn.style.display = "block";
-            placeholder.style.display = "none";
-            icon.style.display = "none";
-            backBtn.onclick = () =>
-              navigateTo(
-                backTarget.screen,
-                backTarget.title,
-                backTarget.backTarget,
-              );
+          document.getElementById("mobile-frame").classList.remove("hidden");
+          // Customize header color based on app
+          const header = document.getElementById("mobile-header");
+          if (appType === "driver") {
+            header.classList.remove("bg-red-800");
+            header.classList.add("bg-blue-800");
+            renderDriverScreen("login");
           } else {
-            backBtn.style.display = "none";
-            placeholder.style.display = "block";
-            icon.style.display = "block";
+            header.classList.add("bg-red-800");
+            header.classList.remove("bg-blue-800");
+            renderCustomerScreen("login");
           }
         }
+      }
 
-        // Handle Bottom Nav
-        const nav = document.getElementById("app-nav");
-        if (["home", "booking", "history", "account"].includes(screen)) {
-          nav.style.display = "flex";
-          activeTab = screen;
-          renderBottomNav();
-        } else {
-          nav.style.display = "none";
+      function setMobileHeader(title, showBack = false, showSOS = false) {
+        document.getElementById("header-title").innerText = title;
+        document.getElementById("header-back").style.display = showBack
+          ? "block"
+          : "none";
+        document.getElementById("header-home").style.display = showBack
+          ? "none"
+          : "block";
+        document.getElementById("header-sos").style.display = showSOS
+          ? "block"
+          : "none";
+      }
+
+      function goBackMobile() {
+        if (navHistory.length > 1) {
+          navHistory.pop(); // remove current
+          const prev = navHistory.pop(); // get previous
+          if (currentApp === "customer")
+            renderCustomerScreen(prev.screen, prev.data, false);
+          else if (currentApp === "driver")
+            renderDriverScreen(prev.screen, prev.data, false);
         }
-
-        // Screen Specific Initializations
-        if (screen === "booking") renderBookingOptions();
-        if (screen === "driver_list") renderDriverList();
-        if (screen === "tracking") startTrackingSimulation();
-        if (screen === "payment") renderPaymentScreen();
-        if (screen === "rating") renderRatingScreen();
-        if (screen === "history") renderHistoryList();
-
-        // Re-initialize icons for dynamically injected HTML
-        lucide.createIcons();
       }
 
-      function goBack() {
-        // Handled dynamically in navigateTo based on parameters
-      }
+      function setMobileNav(activeTab, tabs) {
+        const nav = document.getElementById("mobile-nav");
+        if (!tabs) {
+          nav.classList.add("hidden");
+          return;
+        }
+        nav.classList.remove("hidden");
+        const colorClass =
+          currentApp === "driver" ? "text-blue-600" : "text-red-800";
+        const hoverClass =
+          currentApp === "driver"
+            ? "hover:text-blue-500"
+            : "hover:text-red-600";
 
-      // --- RENDER FUNCTIONS ---
-
-      function renderBottomNav() {
-        const nav = document.getElementById("app-nav");
-        nav.innerHTML = BOTTOM_TABS.map(
-          (tab) => `
-                <button onclick="handleTabClick('${tab.id}')" 
-                        class="flex flex-col items-center p-2 rounded-xl transition ${activeTab === tab.id ? "text-red-800 font-bold" : "text-gray-400 hover:text-red-600"}">
+        nav.innerHTML = tabs
+          .map(
+            (tab) => `
+                <button onclick="${currentApp === "customer" ? `renderCustomerScreen('${tab.id}')` : `renderDriverScreen('${tab.id}')`}" 
+                        class="flex flex-col items-center p-2 rounded-xl transition ${activeTab === tab.id ? `${colorClass} font-bold` : `text-gray-400 ${hoverClass}`}">
                     <i data-lucide="${tab.icon}" class="w-6 h-6"></i>
                     <span class="text-[10px] mt-1">${tab.label}</span>
                 </button>
             `,
-        ).join("");
+          )
+          .join("");
         lucide.createIcons();
       }
 
-      window.handleTabClick = function (tabId) {
-        if (["home", "booking", "history", "account"].includes(tabId)) {
-          let title = "Gọi là tới";
-          if (tabId === "booking") title = "Đặt xe hộ";
-          if (tabId === "history") title = "Lịch sử chuyến đi";
-          if (tabId === "account") title = "Tài khoản cá nhân";
-          navigateTo(tabId, title);
-        } else {
-          alert("Tính năng đang phát triển");
+      // ==========================================
+      // CUSTOMER APP LOGIC
+      // ==========================================
+      const CUSTOMER_TABS = [
+        { id: "home", icon: "home", label: "Home" },
+        { id: "booking", icon: "car", label: "Đặt xe" },
+        { id: "history", icon: "history", label: "Lịch sử" },
+        { id: "account", icon: "user", label: "Tài khoản" },
+      ];
+
+      let customerState = {
+        bookingStep: 1,
+        voucher: null,
+        carType: "sedan",
+        rating: 0,
+      };
+
+      window.setCarType = function (type) {
+        customerState.carType = type;
+        renderCustomerScreen("booking", null, false); // Re-render without pushing history
+      };
+
+      window.setRating = function (val) {
+        customerState.rating = val;
+        const container = document.getElementById("star-rating-container");
+        if (container) {
+          container.innerHTML = [1, 2, 3, 4, 5]
+            .map(
+              (i) => `
+                    <i onclick="setRating(${i})" data-lucide="star" class="w-10 h-10 cursor-pointer transition ${customerState.rating >= i ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-400"}"></i>
+                `,
+            )
+            .join("");
+          lucide.createIcons();
         }
       };
 
-      window.logout = function () {
-        if (confirm("Bạn có chắc chắn muốn đăng xuất?")) {
-          // Reset state to default
-          activeTab = "home";
-          bookingData = { carType: "Sedan", time: "now" };
-          selectedDriver = null;
+      function renderCustomerScreen(screen, data = null, pushHistory = true) {
+        if (pushHistory) navHistory.push({ screen, data });
+        const content = document.getElementById("mobile-content");
+        let html = "";
 
-          navigateTo("login");
-        }
-      };
-
-      function renderHistoryList() {
-        const container = document.getElementById("history-list-container");
-        container.innerHTML = MOCK_HISTORY.map(
-          (item) => `
-                <div onclick="openHistoryDetail(${item.id})" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer active:scale-95 transition">
-                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-50">
-                        <span class="text-sm text-gray-500 font-medium">${item.time} - ${item.date}</span>
-                        <span class="text-xs font-bold px-2 py-1 rounded-md ${item.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}">
-                            ${item.status === "completed" ? "Hoàn thành" : "Đã hủy"}
-                        </span>
-                    </div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-800 shrink-0">
-                            <i data-lucide="car" class="w-5 h-5"></i>
-                        </div>
-                        <div class="flex-1 w-[60%]">
-                            <h4 class="font-bold text-gray-800">${item.driverName}</h4>
-                            <p class="text-xs text-gray-500 mt-0.5 truncate">${item.pickup} ➔ ${item.dropoff}</p>
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center mt-2">
-                        <span class="text-sm font-medium text-gray-600">${item.carType}</span>
-                        <span class="font-bold ${item.status === "completed" ? "text-red-800" : "text-gray-400 line-through"}">${item.price.toLocaleString("vi-VN")}đ</span>
-                    </div>
-                </div>
-            `,
-        ).join("");
-        lucide.createIcons();
-      }
-
-      window.openHistoryDetail = function (id) {
-        const item = MOCK_HISTORY.find((i) => i.id === id);
-        if (!item) return;
-
-        const container = document.getElementById("history-detail-container");
-        container.innerHTML = `
-                <div class="bg-white p-5 shadow-sm mb-2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold text-gray-800">${item.time} - ${item.date}</h2>
-                        <span class="text-xs font-bold px-3 py-1 rounded-full ${item.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}">
-                            ${item.status === "completed" ? "Hoàn thành" : "Đã hủy"}
-                        </span>
-                    </div>
-
-                    <div class="flex items-center gap-4 py-4 border-t border-gray-100">
-                        <img src="${item.driverAvatar}" alt="Driver" class="w-14 h-14 rounded-full border border-gray-200 object-cover" />
-                        <div class="flex-1">
-                            <h3 class="font-bold text-gray-800">${item.driverName}</h3>
-                            <p class="text-sm text-gray-500">${item.carType} • ${item.plate}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 shadow-sm mb-2">
-                    <h3 class="font-bold text-gray-800 mb-4">Lộ trình</h3>
-                    <div class="space-y-4 relative">
-                        <div class="absolute left-[11px] top-[24px] bottom-[24px] w-0.5 bg-gray-200 z-0"></div>
-                        <div class="relative z-10 flex gap-3">
-                            <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-red-800 shrink-0 mt-0.5">
-                                <i data-lucide="map-pin" class="w-3 h-3"></i>
+        switch (screen) {
+          case "login":
+            setMobileHeader("Khách hàng", false);
+            setMobileNav(null);
+            html = `
+                        <div class="flex-1 flex flex-col p-6 bg-white justify-center h-full">
+                            <h1 class="text-3xl font-bold text-red-800 mb-2">Đăng nhập</h1>
+                            <p class="text-gray-500 mb-8">Xin chào khách hàng!</p>
+                            <input type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded-xl mb-4 focus:outline-none focus:border-red-800" />
+                            <input type="password" placeholder="Mật khẩu" class="w-full p-4 border border-gray-300 rounded-xl mb-2 focus:outline-none focus:border-red-800" />
+                            <div class="flex justify-end mb-6">
+                                <button onclick="renderCustomerScreen('forgot_pwd')" class="text-sm text-red-800 font-medium">Quên mật khẩu?</button>
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-500 mb-1">Điểm đón</p>
-                                <p class="text-sm font-medium text-gray-800">${item.pickup}</p>
+                            <button onclick="renderCustomerScreen('home')" class="w-full bg-red-800 text-white p-4 rounded-xl font-bold text-lg mb-4">Đăng nhập</button>
+                            <button class="w-full bg-white border border-red-800 text-red-800 p-4 rounded-xl font-bold text-lg">Đăng ký tài khoản</button>
+                        </div>
+                    `;
+            break;
+
+          case "forgot_pwd":
+            setMobileHeader("Quên mật khẩu", true);
+            setMobileNav(null);
+            html = `
+                        <div class="p-6 bg-white h-full">
+                            <p class="text-gray-500 mb-6">Nhập số điện thoại để nhận mã OTP khôi phục mật khẩu.</p>
+                            <input type="text" placeholder="Số điện thoại" class="w-full p-4 border border-gray-300 rounded-xl mb-6" />
+                            <button onclick="alert('Đã gửi OTP!'); goBackMobile();" class="w-full bg-red-800 text-white p-4 rounded-xl font-bold text-lg">Nhận mã OTP</button>
+                        </div>
+                    `;
+            break;
+
+          case "home":
+            setMobileHeader("Gọi là tới", false);
+            setMobileNav("home", CUSTOMER_TABS);
+            html = `
+                        <div class="flex-1 relative bg-gray-200 overflow-hidden h-full">
+                            <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
+                            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center">
+                                <div class="w-4 h-4 bg-red-800 rounded-full border-2 border-white z-10 shadow-md"></div>
+                                <div class="bg-white text-xs px-2 py-1 rounded shadow mt-2 font-semibold">Vị trí của bạn</div>
+                            </div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4 pb-6 bg-white rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+                                <h2 class="text-xl font-bold mb-4">Bạn muốn đi đâu?</h2>
+                                <button onclick="renderCustomerScreen('booking')" class="w-full bg-red-800 text-white p-4 rounded-full font-bold flex justify-center gap-2">
+                                    <i data-lucide="car"></i> Tìm tài xế
+                                </button>
                             </div>
                         </div>
-                        <div class="relative z-10 flex gap-3">
-                            <div class="w-6 h-6 rounded-full bg-red-800 flex items-center justify-center text-white shrink-0 mt-0.5">
-                                <i data-lucide="navigation" class="w-3 h-3"></i>
+                    `;
+            break;
+
+          case "booking":
+            setMobileHeader("Đặt xe", true);
+            setMobileNav("booking", CUSTOMER_TABS);
+            html = `
+                        <div class="p-4 flex-1 overflow-y-auto bg-white h-full flex flex-col">
+                            <div class="space-y-4 mb-4">
+                                <input type="text" value="Vị trí hiện tại" class="w-full p-3 bg-gray-50 border rounded-xl" readonly />
+                                <input type="text" placeholder="Điểm đến?" class="w-full p-3 border border-red-300 focus:border-red-800 rounded-xl outline-none" />
                             </div>
-                            <div>
-                                <p class="text-xs text-gray-500 mb-1">Điểm đến</p>
-                                <p class="text-sm font-medium text-gray-800">${item.dropoff}</p>
+                            
+                            <div class="mb-6">
+                                <h3 class="font-bold text-gray-800 mb-3">Loại phương tiện</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button onclick="setCarType('bike')" class="p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${customerState.carType === "bike" ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600 hover:border-red-300"}">
+                                        <i data-lucide="bike" class="w-6 h-6"></i>
+                                        <span class="text-sm font-medium">Xe máy</span>
+                                    </button>
+                                    <button onclick="setCarType('sedan')" class="p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${customerState.carType === "sedan" ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600 hover:border-red-300"}">
+                                        <i data-lucide="car" class="w-6 h-6"></i>
+                                        <span class="text-sm font-medium">Ô tô 4 chỗ</span>
+                                    </button>
+                                    <button onclick="setCarType('suv')" class="p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${customerState.carType === "suv" ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600 hover:border-red-300"}">
+                                        <i data-lucide="car-front" class="w-6 h-6"></i>
+                                        <span class="text-sm font-medium">Ô tô 7 chỗ</span>
+                                    </button>
+                                    <button onclick="setCarType('luxury')" class="p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${customerState.carType === "luxury" ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600 hover:border-red-300"}">
+                                        <i data-lucide="gem" class="w-6 h-6"></i>
+                                        <span class="text-sm font-medium">Xe sang</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto">
+                                <button onclick="renderCustomerScreen('drivers')" class="w-full bg-red-800 text-white p-4 rounded-xl font-bold shadow-md active:scale-95 transition">Tìm tài xế gần đây</button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    `;
+            break;
 
-                <div class="bg-white p-5 shadow-sm mb-6">
-                    <h3 class="font-bold text-gray-800 mb-4">Thanh toán</h3>
-                    <div class="flex justify-between text-sm mb-2 text-gray-600">
-                        <span>Cước phí (${item.distance})</span>
-                        <span>${item.price.toLocaleString("vi-VN")}đ</span>
-                    </div>
-                    <div class="flex justify-between text-sm mb-4 text-gray-600">
-                        <span>Phương thức</span>
-                        <span>${item.payment}</span>
-                    </div>
-                    <div class="flex justify-between text-base font-bold text-gray-800 border-t border-gray-100 pt-3">
-                        <span>Tổng tiền</span>
-                        <span class="text-red-800">${item.status === "completed" ? item.price.toLocaleString("vi-VN") + "đ" : "0đ"}</span>
-                    </div>
-                </div>
-            `;
+          case "drivers":
+            setMobileHeader("Chọn tài xế", true);
+            setMobileNav(null);
 
-        lucide.createIcons();
-        navigateTo("history_detail", "Chi tiết chuyến đi", {
-          screen: "history",
-          title: "Lịch sử chuyến đi",
-        });
-      };
+            // Lọc tài xế dựa trên loại xe khách hàng chọn
+            const filteredDrivers = MOCK_DRIVERS.filter(
+              (d) => d.type === customerState.carType,
+            );
 
-      function renderBookingOptions() {
-        // Car Types
-        const types = ["Sedan", "SUV", "Hatchback", "Khác"];
-        document.getElementById("car-types").innerHTML = types
-          .map(
-            (type) => `
-                <button onclick="bookingData.carType = '${type}'; renderBookingOptions()" 
-                        class="p-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${bookingData.carType === type ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600 hover:border-red-300"}">
-                    <i data-lucide="car" class="w-6 h-6"></i>
-                    <span class="text-sm font-medium">${type}</span>
-                </button>
-            `,
-          )
-          .join("");
+            const carTypeName =
+              customerState.carType === "bike"
+                ? "Xe máy"
+                : customerState.carType === "sedan"
+                  ? "Ô tô 4 chỗ"
+                  : customerState.carType === "suv"
+                    ? "Ô tô 7 chỗ"
+                    : "Xe sang";
 
-        // Time Options
-        const times = [
-          { id: "now", label: "Ngay bây giờ" },
-          { id: "later", label: "Đặt lịch" },
-        ];
-        document.getElementById("time-options").innerHTML = times
-          .map(
-            (time) => `
-                <button onclick="bookingData.time = '${time.id}'; renderBookingOptions()" 
-                        class="flex-1 p-3 rounded-xl border flex items-center justify-center gap-2 transition ${bookingData.time === time.id ? "border-red-800 bg-red-50 text-red-800" : "border-gray-200 text-gray-600"}">
-                    <i data-lucide="clock" class="w-[18px] h-[18px]"></i> ${time.label}
-                </button>
-            `,
-          )
-          .join("");
+            html = `
+                        <div class="p-4 flex-1 bg-gray-50 h-full overflow-y-auto space-y-4">
+                            <div class="text-sm text-gray-500 mb-2 flex items-center justify-between">
+                                <span>Kết quả cho: <strong class="text-red-800">${carTypeName}</strong></span>
+                                <span>${filteredDrivers.length} tài xế</span>
+                            </div>
+                            
+                            ${
+                              filteredDrivers.length > 0
+                                ? filteredDrivers
+                                    .map(
+                                      (d) => `
+                                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <img src="${d.avatar}" class="w-12 h-12 rounded-full object-cover border border-gray-200">
+                                        <div class="flex-1">
+                                            <h3 class="font-bold">${d.name}</h3>
+                                            <p class="text-sm text-gray-500"><i data-lucide="star" class="w-3 h-3 inline text-yellow-500 fill-yellow-500"></i> ${d.rating} • ${d.distance}</p>
+                                        </div>
+                                        <div class="text-right font-bold text-red-800">${d.price.toLocaleString()}đ</div>
+                                    </div>
+                                    <button onclick="renderCustomerScreen('tracking', ${d.id})" class="w-full py-2 bg-red-50 text-red-800 font-bold rounded-lg border border-red-200 hover:bg-red-100 transition">Chọn (${d.eta})</button>
+                                </div>
+                            `,
+                                    )
+                                    .join("")
+                                : `
+                                <div class="text-center text-gray-500 py-10 flex flex-col items-center">
+                                    <i data-lucide="car" class="w-12 h-12 mb-3 text-gray-300"></i>
+                                    <p>Không tìm thấy tài xế <strong>${carTypeName}</strong> nào gần bạn lúc này.</p>
+                                    <button onclick="goBackMobile()" class="mt-4 px-4 py-2 bg-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-300">Đổi loại xe khác</button>
+                                </div>
+                            `
+                            }
+                        </div>
+                    `;
+            break;
 
-        lucide.createIcons();
-      }
+          case "tracking":
+            setMobileHeader("Tài xế đang đến...", true, true); // show SOS
+            setMobileNav(null);
+            const driver =
+              MOCK_DRIVERS.find((d) => d.id === data) || MOCK_DRIVERS[0];
+            const iconName = customerState.carType === "bike" ? "bike" : "car";
+            html = `
+                        <div class="flex-1 relative bg-gray-200 overflow-hidden h-full flex flex-col">
+                            <div class="flex-1 relative">
+                                <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
+                                
+                                <!-- User Marker -->
+                                <div class="absolute top-[45%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-0">
+                                    <div class="w-10 h-10 bg-red-800/20 rounded-full animate-ping absolute"></div>
+                                    <div class="w-3 h-3 bg-red-800 rounded-full border-2 border-white z-10 shadow-md"></div>
+                                </div>
 
-      function renderDriverList() {
-        document.getElementById("driver-count").innerText = MOCK_DRIVERS.length;
-        const container = document.getElementById("driver-list-container");
-
-        container.innerHTML = MOCK_DRIVERS.map(
-          (driver) => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col">
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex items-center gap-3">
-                            <img src="${driver.avatar}" alt="${driver.name}" class="w-14 h-14 rounded-full border-2 border-gray-100 object-cover" />
-                            <div>
-                                <h3 class="font-bold text-gray-800">${driver.name}</h3>
-                                <div class="flex items-center gap-1 text-sm text-gray-500">
-                                    <i data-lucide="star" class="w-3.5 h-3.5 text-yellow-500 fill-yellow-500"></i>
-                                    <span class="font-medium text-gray-700">${driver.rating}</span>
-                                    <span class="mx-1">•</span>
-                                    <span>${driver.distance}</span>
+                                <div class="absolute top-4 right-4 z-10 flex flex-col gap-2">
+                                    <button onclick="alert('Đã chia sẻ hành trình (Share Trip) qua Zalo/SMS!')" class="bg-blue-600 text-white p-2 rounded-full shadow-lg"><i data-lucide="share-2" class="w-5 h-5"></i></button>
+                                </div>
+                                
+                                <!-- Driver Marker (Animated) -->
+                                <div id="tracking-marker" class="absolute top-[80%] left-[20%] marker-transition z-10 transform -translate-x-1/2 -translate-y-1/2">
+                                    <div class="flex flex-col items-center">
+                                        <div class="relative">
+                                            <div class="w-10 h-10 bg-white rounded-full border-2 border-green-500 flex items-center justify-center shadow-lg overflow-hidden">
+                                                <img src="${driver.avatar}" alt="Tài xế" class="w-full h-full object-cover" />
+                                            </div>
+                                            <div class="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1 border-2 border-white shadow-sm">
+                                                <i data-lucide="${iconName}" class="w-3 h-3 text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bg-white text-[10px] px-2 py-0.5 rounded-full shadow-md mt-1 font-bold whitespace-nowrap text-green-700">${driver.name}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-t-3xl p-5 shadow-lg relative z-20">
+                                <div class="flex justify-between items-center border-b pb-4 mb-4">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${driver.avatar}" class="w-12 h-12 rounded-full">
+                                        <div>
+                                            <h3 id="tracking-status" class="font-bold text-lg text-gray-800">Đang đến trong ${driver.eta}</h3>
+                                            <p class="text-sm text-gray-500">${driver.name} • ${driver.plate}</p>
+                                        </div>
+                                    </div>
+                                    <button class="w-10 h-10 bg-red-100 text-red-800 rounded-full flex items-center justify-center shrink-0"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                                </div>
+                                <div class="flex gap-3">
+                                    <button onclick="alert('Hủy chuyến thành công!'); renderCustomerScreen('home')" class="flex-1 py-3 bg-red-50 text-red-500 font-bold rounded-xl transition hover:bg-red-100">Hủy chuyến</button>
+                                    <button id="btn-finish-ride" onclick="renderCustomerScreen('payment')" class="flex-[2] py-3 bg-gray-400 text-white font-bold rounded-xl shadow-md cursor-not-allowed transition" disabled>Đang di chuyển...</button>
                                 </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="font-bold text-red-800 text-lg">${driver.price.toLocaleString("vi-VN")}đ</div>
-                            <div class="text-xs text-gray-500">Ước tính</div>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-2 mb-4 bg-gray-50 p-2 rounded-lg text-sm text-gray-600">
-                        <i data-lucide="shield-check" class="w-4 h-4 text-green-600"></i> Đã xác thực bằng GPLX
-                    </div>
+                    `;
 
-                    <button onclick="selectDriver(${driver.id})" class="w-full py-3 bg-red-50 text-red-800 font-bold rounded-xl border border-red-200 hover:bg-red-800 hover:text-white transition">
-                        Chọn tài xế (${driver.eta})
-                    </button>
-                </div>
-            `,
-        ).join("");
-      }
+            // Add Simulation Logic
+            setTimeout(() => {
+              const marker = document.getElementById("tracking-marker");
+              if (marker) {
+                marker.style.top = "48%";
+                marker.style.left = "45%";
+              }
+            }, 100);
 
-      function selectDriver(id) {
-        selectedDriver = MOCK_DRIVERS.find((d) => d.id === id);
-        navigateTo("tracking", "Tài xế đang đến", {
-          screen: "driver_list",
-          title: "Chọn Tài Xế",
-          backTarget: { screen: "booking" },
-        });
-      }
+            if (window.trackingTimeout) clearTimeout(window.trackingTimeout);
+            window.trackingTimeout = setTimeout(() => {
+              const btn = document.getElementById("btn-finish-ride");
+              if (btn) {
+                btn.className =
+                  "flex-[2] py-3 bg-red-800 text-white font-bold rounded-xl shadow-md transition hover:bg-red-900";
+                btn.disabled = false;
+                btn.innerText = "Kết thúc & Thanh toán";
+              }
+              const status = document.getElementById("tracking-status");
+              if (status) status.innerText = "Tài xế đã có mặt!";
+              setMobileHeader("Tài xế đã đến", true, true);
+            }, 3000);
 
-      function startTrackingSimulation() {
-        // Reset state
-        const marker = document.getElementById("tracking-driver-marker");
-        marker.style.top = "70%";
-        marker.style.left = "30%";
+            break;
 
-        document.getElementById("tracking-status").innerText =
-          `Đến trong ${selectedDriver.eta}`;
-        document.getElementById("tracking-plate").innerText =
-          selectedDriver.plate;
-        document.getElementById("tracking-avatar").src = selectedDriver.avatar;
-        document.getElementById("tracking-name").innerText =
-          selectedDriver.name;
-        document.getElementById("tracking-rating").innerText =
-          selectedDriver.rating;
-
-        const btnFinish = document.getElementById("btn-finish-ride");
-        btnFinish.innerText = "Giả lập: Đã đến nơi";
-
-        if (trackingTimeout) clearTimeout(trackingTimeout);
-
-        // Simulate arriving after 3 seconds
-        setTimeout(() => {
-          marker.style.top = "55%";
-          marker.style.left = "45%";
-        }, 100);
-
-        trackingTimeout = setTimeout(() => {
-          document.getElementById("header-title").innerText = "Tài xế đã đến";
-          document.getElementById("tracking-status").innerText =
-            "Tài xế đã có mặt!";
-          btnFinish.innerText = "Kết thúc & Thanh toán";
-        }, 3000);
-      }
-
-      function cancelRide() {
-        if (confirm("Bạn có chắc chắn muốn hủy chuyến?")) {
-          if (trackingTimeout) clearTimeout(trackingTimeout);
-          navigateTo("home");
-        }
-      }
-
-      function renderPaymentScreen() {
-        document.getElementById("payment-price").innerText =
-          `${selectedDriver.price.toLocaleString("vi-VN")}đ`;
-        document.getElementById("payment-distance").innerText =
-          selectedDriver.distance;
-
-        const renderMethods = () => {
-          document.getElementById("payment-methods").innerHTML =
-            PAYMENT_METHODS.map(
-              (method) => `
-                    <label class="flex items-center justify-between p-4 rounded-xl border cursor-pointer transition ${activePayment === method.id ? "border-red-800 bg-red-50" : "border-gray-200 bg-white"}"
-                           onclick="activePayment='${method.id}'; document.getElementById('payment-methods').innerHTML=''; renderPaymentMethods();">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold ${method.color}">
-                                ${method.iconNode ? `<i data-lucide="${method.iconNode}" class="w-4 h-4"></i>` : method.iconText}
+          case "payment":
+            setMobileHeader("Thanh toán", true);
+            setMobileNav(null);
+            const discount = customerState.voucher ? 20000 : 0;
+            const total = 200000 - discount;
+            html = `
+                        <div class="p-5 flex-1 bg-gray-50 h-full flex flex-col">
+                            <div class="bg-white p-5 rounded-2xl shadow-sm text-center mb-4">
+                                <h2 class="text-xl font-bold mb-1">Chuyến đi hoàn tất</h2>
+                                <div class="text-4xl font-black text-red-800 my-4">${total.toLocaleString()}đ</div>
                             </div>
-                            <span class="font-medium text-gray-800">${method.name}</span>
+                            
+                            <button onclick="renderCustomerScreen('vouchers')" class="flex justify-between items-center bg-white p-4 rounded-xl border border-red-200 mb-6 active:bg-gray-50">
+                                <div class="flex items-center gap-2 text-red-800 font-bold">
+                                    <i data-lucide="ticket" class="w-5 h-5"></i> Khuyến mãi
+                                </div>
+                                <span class="text-gray-500">${customerState.voucher ? "-20K" : "Chọn hoặc nhập mã >"}</span>
+                            </button>
+
+                            <div class="space-y-3 mb-auto">
+                                <label class="flex items-center justify-between p-4 bg-white rounded-xl border border-red-800">
+                                    <span class="font-bold">Ví MoMo</span><input type="radio" checked class="accent-red-800">
+                                </label>
+                                <label class="flex items-center justify-between p-4 bg-white rounded-xl border">
+                                    <span class="font-bold">Tiền mặt</span><input type="radio" class="accent-red-800">
+                                </label>
+                            </div>
+                            <button onclick="renderCustomerScreen('rating')" class="w-full mt-6 bg-red-800 text-white p-4 rounded-xl font-bold">Xác nhận thanh toán</button>
                         </div>
-                        <input type="radio" name="payment" ${activePayment === method.id ? "checked" : ""} class="w-5 h-5 accent-red-800" />
-                    </label>
-                `,
-            ).join("");
-          lucide.createIcons();
-        };
+                    `;
+            break;
 
-        // Expose a local render for the click event
-        window.renderPaymentMethods = renderMethods;
-        renderMethods();
-      }
+          case "vouchers":
+            setMobileHeader("Khuyến mãi", true);
+            setMobileNav(null);
+            html = `
+                        <div class="p-4 bg-gray-50 h-full">
+                            <div class="bg-white border-l-4 border-red-800 p-4 rounded shadow-sm mb-4">
+                                <h3 class="font-bold text-red-800">GIAM20K</h3>
+                                <p class="text-sm text-gray-500 mb-2">Giảm 20.000đ cho chuyến đi</p>
+                                <button onclick="customerState.voucher='GIAM20K'; goBackMobile();" class="text-xs bg-red-800 text-white px-3 py-1 rounded">Áp dụng</button>
+                            </div>
+                        </div>
+                    `;
+            break;
 
-      function renderRatingScreen() {
-        document.getElementById("rating-avatar").src = selectedDriver.avatar;
-        document.getElementById("rating-name").innerText = selectedDriver.name;
-        ratingValue = 0;
-        updateStars();
-      }
+          case "rating":
+            setMobileHeader("Đánh giá", false);
+            setMobileNav(null);
+            if (pushHistory) customerState.rating = 0; // Reset số sao mỗi khi vào màn hình này
 
-      function updateStars(val = ratingValue) {
-        ratingValue = val;
-        let html = "";
-        for (let i = 1; i <= 5; i++) {
-          const isActive = ratingValue >= i;
-          html += `
-                    <button onclick="updateStars(${i})" class="p-1 focus:outline-none transition-transform hover:scale-110">
-                        <i data-lucide="star" class="w-10 h-10 ${isActive ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}"></i>
-                    </button>
-                `;
+            html = `
+                        <div class="flex-1 bg-white p-6 flex flex-col items-center justify-center h-full text-center">
+                            <h2 class="text-2xl font-bold mb-4">Đánh giá tài xế</h2>
+                            <div id="star-rating-container" class="flex gap-2 mb-6">
+                                ${[1, 2, 3, 4, 5]
+                                  .map(
+                                    (i) => `
+                                    <i onclick="setRating(${i})" data-lucide="star" class="w-10 h-10 cursor-pointer transition ${customerState.rating >= i ? "text-yellow-400 fill-yellow-400" : "text-gray-300 hover:text-yellow-400"}"></i>
+                                `,
+                                  )
+                                  .join("")}
+                            </div>
+                            <textarea placeholder="Nhận xét..." class="w-full p-4 border rounded-xl mb-6 bg-gray-50"></textarea>
+                            <button onclick="customerState.voucher=null; alert('Cảm ơn bạn đã đánh giá!'); renderCustomerScreen('home')" class="w-full bg-red-800 text-white p-4 rounded-xl font-bold">Gửi đánh giá</button>
+                        </div>
+                    `;
+            break;
+
+          case "history":
+            setMobileHeader("Lịch sử chuyến đi", false);
+            setMobileNav("history", CUSTOMER_TABS);
+            html = `
+                        <div class="p-4 flex-1 overflow-y-auto space-y-4 h-full bg-gray-50">
+                            ${MOCK_HISTORY.map(
+                              (item) => `
+                                <div onclick="renderCustomerScreen('history_detail', ${item.id})" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 cursor-pointer active:scale-95 transition">
+                                    <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-50">
+                                        <span class="text-sm text-gray-500 font-medium">${item.time} - ${item.date}</span>
+                                        <span class="text-xs font-bold px-2 py-1 rounded-md ${item.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}">
+                                            ${item.status === "completed" ? "Hoàn thành" : "Đã hủy"}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-800 shrink-0">
+                                            <i data-lucide="${item.carType === "Xe máy" ? "bike" : "car"}" class="w-5 h-5"></i>
+                                        </div>
+                                        <div class="flex-1 w-[60%]">
+                                            <h4 class="font-bold text-gray-800">${item.driverName}</h4>
+                                            <p class="text-xs text-gray-500 mt-0.5 truncate">${item.pickup} ➔ ${item.dropoff}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-sm font-medium text-gray-600">${item.carType}</span>
+                                        <span class="font-bold ${item.status === "completed" ? "text-red-800" : "text-gray-400 line-through"}">${item.price.toLocaleString("vi-VN")}đ</span>
+                                    </div>
+                                </div>
+                            `,
+                            ).join("")}
+                        </div>
+                    `;
+            break;
+
+          case "history_detail":
+            setMobileHeader("Chi tiết chuyến đi", true);
+            setMobileNav(null);
+            const item = MOCK_HISTORY.find((i) => i.id === data);
+            if (!item) return;
+
+            html = `
+                        <div class="flex-1 overflow-y-auto h-full bg-gray-50">
+                            <div class="bg-white p-5 shadow-sm mb-2">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h2 class="text-lg font-bold text-gray-800">${item.time} - ${item.date}</h2>
+                                    <span class="text-xs font-bold px-3 py-1 rounded-full ${item.status === "completed" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}">
+                                        ${item.status === "completed" ? "Hoàn thành" : "Đã hủy"}
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-4 py-4 border-t border-gray-100">
+                                    <img src="${item.driverAvatar}" alt="Driver" class="w-14 h-14 rounded-full border border-gray-200 object-cover" />
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-gray-800">${item.driverName}</h3>
+                                        <p class="text-sm text-gray-500">${item.carType} • ${item.plate}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-5 shadow-sm mb-2">
+                                <h3 class="font-bold text-gray-800 mb-4">Lộ trình</h3>
+                                <div class="space-y-4 relative">
+                                    <div class="absolute left-[11px] top-[24px] bottom-[24px] w-0.5 bg-gray-200 z-0"></div>
+                                    <div class="relative z-10 flex gap-3">
+                                        <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center text-red-800 shrink-0 mt-0.5">
+                                            <i data-lucide="map-pin" class="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 mb-1">Điểm đón</p>
+                                            <p class="text-sm font-medium text-gray-800">${item.pickup}</p>
+                                        </div>
+                                    </div>
+                                    <div class="relative z-10 flex gap-3">
+                                        <div class="w-6 h-6 rounded-full bg-red-800 flex items-center justify-center text-white shrink-0 mt-0.5">
+                                            <i data-lucide="navigation" class="w-3 h-3"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500 mb-1">Điểm đến</p>
+                                            <p class="text-sm font-medium text-gray-800">${item.dropoff}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-5 shadow-sm mb-6">
+                                <h3 class="font-bold text-gray-800 mb-4">Thanh toán</h3>
+                                <div class="flex justify-between text-sm mb-2 text-gray-600">
+                                    <span>Cước phí (${item.distance})</span>
+                                    <span>${item.price.toLocaleString("vi-VN")}đ</span>
+                                </div>
+                                <div class="flex justify-between text-sm mb-4 text-gray-600">
+                                    <span>Phương thức</span>
+                                    <span>${item.payment}</span>
+                                </div>
+                                <div class="flex justify-between text-base font-bold text-gray-800 border-t border-gray-100 pt-3">
+                                    <span>Tổng tiền</span>
+                                    <span class="text-red-800">${item.status === "completed" ? item.price.toLocaleString("vi-VN") + "đ" : "0đ"}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            break;
+
+          case "account":
+            setMobileHeader("Tài khoản", false);
+            setMobileNav("account", CUSTOMER_TABS);
+            html = `
+                        <div class="p-4 flex-1 overflow-y-auto h-full">
+                            <!-- Profile Info -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 mb-6">
+                                <img src="https://i.pravatar.cc/150?img=68" alt="User Avatar" class="w-16 h-16 rounded-full border-2 border-red-100 object-cover" />
+                                <div class="flex-1">
+                                    <h2 class="text-xl font-bold text-gray-800">Khách Hàng Demo</h2>
+                                    <p class="text-sm text-gray-500">0987 654 321</p>
+                                    <div class="inline-block mt-1 px-2 py-0.5 bg-red-50 text-red-800 text-xs font-semibold rounded-md border border-red-100">
+                                        Thành viên Vàng
+                                    </div>
+                                </div>
+                                <button class="p-2 text-gray-400 hover:text-red-800 transition">
+                                    <i data-lucide="edit-2" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Menu List -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                                        <i data-lucide="credit-card" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="flex-1 text-left font-medium text-gray-700">Phương thức thanh toán</span>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center text-green-600">
+                                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="flex-1 text-left font-medium text-gray-700">Địa chỉ đã lưu</span>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                                        <i data-lucide="shield" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="flex-1 text-left font-medium text-gray-700">Bảo mật & Quyền riêng tư</span>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                            </div>
+
+                            <!-- Logout Button -->
+                            <button onclick="logout()" class="w-full bg-red-50 text-red-800 p-4 rounded-xl font-bold text-lg border border-red-200 active:scale-95 transition flex items-center justify-center gap-2 hover:bg-red-100">
+                                <i data-lucide="log-out" class="w-5 h-5"></i>
+                                Đăng xuất
+                            </button>
+                        </div>
+                    `;
+            break;
         }
-        document.getElementById("star-rating-container").innerHTML = html;
+
+        content.innerHTML = html;
         lucide.createIcons();
       }
 
-      function submitRating() {
-        alert("Cảm ơn bạn đã sử dụng dịch vụ!");
-        selectedDriver = null;
-        navigateTo("home");
+      // ==========================================
+      // DRIVER APP LOGIC
+      // ==========================================
+      const DRIVER_TABS = [
+        { id: "home", icon: "map", label: "Nhận chuyến" },
+        { id: "earnings", icon: "bar-chart-2", label: "Thu nhập" },
+        { id: "wallet", icon: "wallet", label: "Ví" },
+        { id: "account", icon: "user", label: "Tài khoản" },
+      ];
+
+      let driverOnline = false;
+
+      function renderDriverScreen(screen, data = null, pushHistory = true) {
+        if (pushHistory) navHistory.push({ screen, data });
+        const content = document.getElementById("mobile-content");
+        let html = "";
+
+        switch (screen) {
+          case "login":
+            setMobileHeader("Tài xế đối tác", false);
+            setMobileNav(null);
+            html = `
+                        <div class="flex-1 flex flex-col p-6 bg-white justify-center h-full">
+                            <div class="w-20 h-20 bg-blue-800 rounded-full flex justify-center items-center mb-6"><i data-lucide="car" class="text-white w-10 h-10"></i></div>
+                            <h1 class="text-2xl font-bold text-blue-800 mb-6">Đăng nhập Tài Xế</h1>
+                            <input type="text" placeholder="SĐT đăng ký" class="w-full p-4 border rounded-xl mb-4 focus:border-blue-800 outline-none" />
+                            <button onclick="renderDriverScreen('home')" class="w-full bg-blue-800 text-white p-4 rounded-xl font-bold mb-4">Đăng nhập</button>
+                            <button onclick="renderDriverScreen('upload_docs')" class="w-full bg-white border border-blue-800 text-blue-800 p-4 rounded-xl font-bold">Đăng ký mới</button>
+                        </div>
+                    `;
+            break;
+
+          case "upload_docs":
+            setMobileHeader("Hồ sơ tài xế", true);
+            setMobileNav(null);
+            html = `
+                        <div class="p-6 bg-white h-full overflow-y-auto">
+                            <h2 class="font-bold text-lg mb-4">Tải lên giấy tờ</h2>
+                            <div class="space-y-4">
+                                <div class="border-2 border-dashed border-gray-300 p-6 rounded-xl text-center cursor-pointer hover:bg-gray-50">
+                                    <i data-lucide="id-card" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                                    <p class="text-sm font-medium">CCCD / CMND (Mặt trước)</p>
+                                </div>
+                                <div class="border-2 border-dashed border-gray-300 p-6 rounded-xl text-center cursor-pointer hover:bg-gray-50">
+                                    <i data-lucide="file-badge-2" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                                    <p class="text-sm font-medium">Bằng lái xe (GPLX)</p>
+                                </div>
+                                <div class="border-2 border-dashed border-gray-300 p-6 rounded-xl text-center cursor-pointer hover:bg-gray-50">
+                                    <i data-lucide="file-text" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
+                                    <p class="text-sm font-medium">Lý lịch tư pháp</p>
+                                </div>
+                            </div>
+                            <button onclick="alert('Đã gửi hồ sơ chờ duyệt!'); goBackMobile();" class="w-full bg-blue-800 text-white p-4 rounded-xl font-bold mt-6">Gửi yêu cầu xét duyệt</button>
+                        </div>
+                    `;
+            break;
+
+          case "home":
+            setMobileHeader("Nhận chuyến", false);
+            setMobileNav("home", DRIVER_TABS);
+            html = `
+                        <div class="flex-1 relative h-full flex flex-col">
+                            <div class="bg-white p-4 shadow-sm z-20 flex justify-between items-center">
+                                <span class="font-bold text-gray-700">Trạng thái hoạt động</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" id="driver-toggle" class="sr-only peer" ${driverOnline ? "checked" : ""} onchange="toggleDriverOnline(this.checked)">
+                                  <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex-1 bg-gray-200 relative">
+                                <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
+                                <div id="driver-radar" class="${driverOnline ? "block" : "hidden"} absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                                    <div class="w-32 h-32 bg-blue-500/20 rounded-full animate-ping absolute -top-12 -left-12"></div>
+                                    <div class="w-8 h-8 bg-blue-600 rounded-full border-4 border-white z-10 relative"></div>
+                                </div>
+                                <div id="incoming-request" class="hidden absolute inset-x-4 top-1/4 bg-white p-5 rounded-2xl shadow-2xl z-30 border-2 border-blue-500">
+                                    <div class="text-center mb-4">
+                                        <div class="animate-bounce bg-blue-100 text-blue-800 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"><i data-lucide="bell-ring"></i></div>
+                                        <h3 class="font-bold text-xl">Cuốc xe mới!</h3>
+                                        <p class="text-red-600 font-black text-2xl mt-1">200.000đ</p>
+                                    </div>
+                                    <div class="text-sm text-gray-600 space-y-2 mb-6">
+                                        <p><i data-lucide="map-pin" class="w-4 h-4 inline text-blue-500"></i> Đón: 123 Nguyễn Trãi (2km)</p>
+                                        <p><i data-lucide="navigation" class="w-4 h-4 inline text-green-500"></i> Đến: 456 Lê Lợi (5km)</p>
+                                    </div>
+                                    <div class="flex gap-3">
+                                        <button onclick="document.getElementById('incoming-request').classList.add('hidden')" class="flex-1 py-3 bg-gray-100 font-bold rounded-xl text-gray-600">Bỏ qua</button>
+                                        <button onclick="renderDriverScreen('navigation')" class="flex-[2] py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg">Nhận chuyến</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            break;
+
+          case "navigation":
+            setMobileHeader("Điều hướng", true);
+            setMobileNav(null);
+            html = `
+                        <div class="flex-1 relative bg-gray-200 overflow-hidden h-full flex flex-col">
+                            <div class="bg-blue-800 text-white p-4 shadow-md z-20 flex items-center gap-3">
+                                <i id="nav-dir-icon" data-lucide="arrow-up" class="w-8 h-8"></i>
+                                <div>
+                                    <div id="nav-dir-text" class="text-2xl font-bold">Đi thẳng</div>
+                                    <div id="nav-dir-sub" class="text-sm opacity-80">vào Nguyễn Trãi (500m)</div>
+                                </div>
+                            </div>
+                            <div class="flex-1 relative">
+                                <div class="absolute inset-0 opacity-20 bg-map-pattern"></div>
+                                <!-- Mock Route Line -->
+                                <div class="absolute top-[20%] left-[20%] w-[60%] h-[60%] border-l-4 border-t-4 border-blue-500 rounded-tl-3xl z-0"></div>
+                                
+                                <!-- Destination Marker -->
+                                <div class="absolute top-[20%] left-[80%] transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10">
+                                    <div class="w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg"></div>
+                                    <div class="bg-white text-[10px] px-1 py-0.5 rounded shadow mt-1 font-bold whitespace-nowrap">Điểm đến</div>
+                                </div>
+
+                                <!-- Driver Marker (Animated) -->
+                                <div id="driver-nav-marker" class="absolute top-[80%] left-[20%] z-20 transform -translate-x-1/2 -translate-y-1/2" style="transition: top 3s linear, left 3s linear;">
+                                    <div class="flex flex-col items-center">
+                                        <div class="relative">
+                                            <div class="w-10 h-10 bg-white rounded-full border-2 border-blue-600 flex items-center justify-center shadow-lg overflow-hidden">
+                                                <img src="https://i.pravatar.cc/150?img=11" alt="Tài xế" class="w-full h-full object-cover" />
+                                            </div>
+                                            <div class="absolute -bottom-1 -right-1 bg-blue-600 rounded-full p-1 border-2 border-white shadow-sm">
+                                                <i data-lucide="car" class="w-3 h-3 text-white"></i>
+                                            </div>
+                                        </div>
+                                        <div class="bg-white text-[10px] px-2 py-0.5 rounded-full shadow-md mt-1 font-bold whitespace-nowrap text-blue-700">Tài xế (Bạn)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-5 rounded-t-3xl shadow-lg z-20">
+                                <h3 class="font-bold text-lg mb-4">Khách: Lê Văn Khách</h3>
+                                <div class="flex gap-3">
+                                    <button class="flex-1 py-3 bg-blue-50 text-blue-800 font-bold rounded-xl border border-blue-200"><i data-lucide="message-square" class="w-5 h-5 mx-auto"></i></button>
+                                    <button class="flex-1 py-3 bg-blue-50 text-blue-800 font-bold rounded-xl border border-blue-200"><i data-lucide="phone" class="w-5 h-5 mx-auto"></i></button>
+                                    <button id="btn-finish-nav" onclick="renderDriverScreen('home'); alert('Hoàn thành chuyến, cộng 200k vào ví!')" class="flex-[3] py-3 bg-gray-400 text-white font-bold rounded-xl shadow-md cursor-not-allowed transition" disabled>Đang di chuyển...</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+            // Animation sequence
+            setTimeout(() => {
+              const marker = document.getElementById("driver-nav-marker");
+              if (marker) marker.style.top = "20%"; // Move up along the left border
+            }, 100);
+
+            if (window.navTimeout1) clearTimeout(window.navTimeout1);
+            window.navTimeout1 = setTimeout(() => {
+              const marker = document.getElementById("driver-nav-marker");
+              if (marker) marker.style.left = "80%"; // Move right along the top border
+
+              const dirText = document.getElementById("nav-dir-text");
+              const dirSub = document.getElementById("nav-dir-sub");
+              if (dirText) dirText.innerText = "Rẽ phải";
+              if (dirSub) dirSub.innerText = "tới điểm trả khách";
+            }, 3100); // After first movement
+
+            if (window.navTimeout2) clearTimeout(window.navTimeout2);
+            window.navTimeout2 = setTimeout(() => {
+              const btn = document.getElementById("btn-finish-nav");
+              if (btn) {
+                btn.className =
+                  "flex-[3] py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md transition hover:bg-blue-700";
+                btn.disabled = false;
+                btn.innerText = "Đã trả khách";
+              }
+              const dirText = document.getElementById("nav-dir-text");
+              const dirSub = document.getElementById("nav-dir-sub");
+              if (dirText) dirText.innerText = "Đã đến nơi";
+              if (dirSub) dirSub.innerText = "Vui lòng trả khách";
+            }, 6100); // After second movement
+
+            break;
+
+          case "earnings":
+            setMobileHeader("Thu nhập", false);
+            setMobileNav("earnings", DRIVER_TABS);
+            html = `
+                        <div class="p-4 bg-gray-50 h-full overflow-y-auto">
+                            <div class="bg-blue-600 text-white p-6 rounded-2xl shadow-lg mb-6">
+                                <p class="text-blue-100 mb-1">Thu nhập hôm nay</p>
+                                <h2 class="text-4xl font-bold mb-4">850.000đ</h2>
+                                <div class="flex justify-between border-t border-blue-500 pt-3 text-sm">
+                                    <span>Hoàn thành: 5 chuyến</span>
+                                    <span>Online: 4h 30m</span>
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-gray-800 mb-3">Lịch sử giao dịch</h3>
+                            <div class="space-y-3">
+                                ${[1, 2, 3]
+                                  .map(
+                                    (i) => `
+                                    <div class="bg-white p-4 rounded-xl border border-gray-100 flex justify-between items-center shadow-sm">
+                                        <div><p class="font-bold">Chuyến xe #${1000 + i}</p><p class="text-xs text-gray-500">14:30 - Hôm nay</p></div>
+                                        <div class="font-bold text-green-600">+150.000đ</div>
+                                    </div>
+                                `,
+                                  )
+                                  .join("")}
+                            </div>
+                        </div>
+                    `;
+            break;
+
+          case "wallet":
+            setMobileHeader("Ví tài xế", false);
+            setMobileNav("wallet", DRIVER_TABS);
+            html = `
+                        <div class="p-4 bg-gray-50 h-full">
+                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center mb-6">
+                                <p class="text-gray-500 mb-2">Số dư ví (Khấu trừ chiết khấu)</p>
+                                <h2 class="text-3xl font-black text-gray-800 mb-6">2.500.000đ</h2>
+                                <div class="flex gap-4">
+                                    <button class="flex-1 bg-blue-50 text-blue-800 py-3 rounded-xl font-bold border border-blue-100">Nạp tiền</button>
+                                    <button class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md">Rút tiền</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            break;
+
+          case "account":
+            setMobileHeader("Tài khoản", false);
+            setMobileNav("account", DRIVER_TABS);
+            html = `
+                        <div class="p-4 flex-1 overflow-y-auto h-full">
+                            <!-- Profile Info -->
+                            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 mb-4">
+                                <img src="https://i.pravatar.cc/150?img=11" alt="Driver Avatar" class="w-16 h-16 rounded-full border-2 border-blue-100 object-cover" />
+                                <div class="flex-1">
+                                    <h2 class="text-xl font-bold text-gray-800">Tài xế Demo</h2>
+                                    <p class="text-sm text-gray-500">0912 345 678</p>
+                                    <div class="inline-block mt-1 px-2 py-0.5 bg-green-50 text-green-700 text-xs font-semibold rounded-md border border-green-200">
+                                        Đang hoạt động
+                                    </div>
+                                </div>
+                                <button class="p-2 text-gray-400 hover:text-blue-600 transition">
+                                    <i data-lucide="edit-2" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="grid grid-cols-3 gap-3 mb-6">
+                                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <i data-lucide="star" class="w-6 h-6 mx-auto text-yellow-500 fill-yellow-500 mb-1"></i>
+                                    <div class="font-bold text-gray-800">4.9</div>
+                                    <div class="text-[10px] text-gray-500">Đánh giá</div>
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <i data-lucide="check-circle-2" class="w-6 h-6 mx-auto text-green-500 mb-1"></i>
+                                    <div class="font-bold text-gray-800">95%</div>
+                                    <div class="text-[10px] text-gray-500">Tỷ lệ nhận</div>
+                                </div>
+                                <div class="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 text-center">
+                                    <i data-lucide="car" class="w-6 h-6 mx-auto text-blue-500 mb-1"></i>
+                                    <div class="font-bold text-gray-800">1,250</div>
+                                    <div class="text-[10px] text-gray-500">Chuyến</div>
+                                </div>
+                            </div>
+
+                            <!-- Menu List -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+                                        <i data-lucide="car-front" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="flex-1 text-left">
+                                        <div class="font-medium text-gray-700">Phương tiện của tôi</div>
+                                        <div class="text-xs text-gray-500">Ô tô 4 chỗ • 30E-123.45</div>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    </div>
+                                    <div class="flex-1 text-left">
+                                        <div class="font-medium text-gray-700">Hồ sơ giấy tờ</div>
+                                        <div class="text-xs text-green-600 font-medium">Đã xác thực</div>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                                <button class="w-full p-4 flex items-center gap-3 border-b border-gray-50 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                                        <i data-lucide="shield" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="flex-1 text-left font-medium text-gray-700">Cài đặt & Bảo mật</span>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                                <button class="w-full p-4 flex items-center gap-3 hover:bg-gray-50 transition">
+                                    <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center text-orange-600">
+                                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                                    </div>
+                                    <span class="flex-1 text-left font-medium text-gray-700">Trung tâm hỗ trợ</span>
+                                    <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+                                </button>
+                            </div>
+
+                            <!-- Logout Button -->
+                            <button onclick="logout()" class="w-full bg-blue-50 text-blue-800 p-4 rounded-xl font-bold text-lg border border-blue-200 active:scale-95 transition flex items-center justify-center gap-2 hover:bg-blue-100">
+                                <i data-lucide="log-out" class="w-5 h-5"></i>
+                                Đăng xuất
+                            </button>
+                        </div>
+                    `;
+            break;
+        }
+
+        content.innerHTML = html;
+        lucide.createIcons();
       }
 
-      // --- INITIALIZATION ---
+      window.toggleDriverOnline = function (isOn) {
+        driverOnline = isOn;
+        const radar = document.getElementById("driver-radar");
+        if (radar) radar.classList.toggle("hidden", !isOn);
+
+        if (isOn) {
+          // Simulate incoming request after 2 seconds
+          setTimeout(() => {
+            const req = document.getElementById("incoming-request");
+            if (req && driverOnline) req.classList.remove("hidden");
+          }, 2000);
+        } else {
+          const req = document.getElementById("incoming-request");
+          if (req) req.classList.add("hidden");
+        }
+      };
+
+      // ==========================================
+      // ADMIN DESKTOP LOGIC
+      // ==========================================
+      function renderAdmin(view) {
+        // Update active state in sidebar
+        [
+          "dashboard",
+          "users",
+          "drivers",
+          "rides",
+          "promotions",
+          "permissions",
+        ].forEach((v) => {
+          const el = document.getElementById(`nav-a-${v}`);
+          if (el) {
+            if (v === view) {
+              el.classList.add("bg-gray-800", "text-white");
+              el.classList.remove("text-gray-400");
+            } else {
+              el.classList.remove("bg-gray-800", "text-white");
+              el.classList.add("text-gray-400");
+            }
+          }
+        });
+
+        const content = document.getElementById("admin-content");
+        let title = "Dashboard";
+        let html = "";
+
+        switch (view) {
+          case "dashboard":
+            title = "Tổng quan hệ thống";
+            html = `
+                        <!-- Stats Row -->
+                        <div class="grid grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-start"><div class="text-gray-500">Tổng doanh thu</div><div class="bg-green-100 p-2 rounded text-green-600"><i data-lucide="dollar-sign"></i></div></div>
+                                <div class="text-2xl font-bold mt-4">125.4M đ</div>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-start"><div class="text-gray-500">Chuyến đi (Tháng)</div><div class="bg-blue-100 p-2 rounded text-blue-600"><i data-lucide="map"></i></div></div>
+                                <div class="text-2xl font-bold mt-4">3,450</div>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-start"><div class="text-gray-500">Tài xế Active</div><div class="bg-orange-100 p-2 rounded text-orange-600"><i data-lucide="car"></i></div></div>
+                                <div class="text-2xl font-bold mt-4">412</div>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                                <div class="flex justify-between items-start"><div class="text-gray-500">Người dùng</div><div class="bg-purple-100 p-2 rounded text-purple-600"><i data-lucide="users"></i></div></div>
+                                <div class="text-2xl font-bold mt-4">12,800</div>
+                            </div>
+                        </div>
+
+                        <!-- Charts/Tables Mock -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-64 flex flex-col justify-center items-center text-gray-400">
+                                <i data-lucide="bar-chart-3" class="w-16 h-16 mb-2"></i>
+                                Biểu đồ doanh thu (Mock)
+                            </div>
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-64 flex flex-col justify-center items-center text-gray-400">
+                                <i data-lucide="pie-chart" class="w-16 h-16 mb-2"></i>
+                                Biểu đồ tỷ lệ hủy chuyến (Mock)
+                            </div>
+                        </div>
+                    `;
+            break;
+
+          case "users":
+            title = "Quản lý Người Dùng";
+            html = `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-4 border-b flex justify-between"><input type="text" placeholder="Tìm kiếm user..." class="border p-2 rounded w-64"><button class="bg-red-800 text-white px-4 py-2 rounded">Thêm User</button></div>
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600"><tr><th class="p-4">ID</th><th class="p-4">Tên</th><th class="p-4">SĐT</th><th class="p-4">Hạng</th><th class="p-4">Hành động</th></tr></thead>
+                                <tbody>
+                                    ${[1, 2, 3, 4]
+                                      .map(
+                                        (i) => `
+                                        <tr class="border-t"><td class="p-4">#U00${i}</td><td class="p-4 font-medium">Khách hàng ${i}</td><td class="p-4">098765432${i}</td><td class="p-4"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs font-bold">Vàng</span></td><td class="p-4 text-blue-600 cursor-pointer hover:underline">Chi tiết</td></tr>
+                                    `,
+                                      )
+                                      .join("")}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            break;
+
+          case "drivers":
+            title = "Xét duyệt & Quản lý Tài Xế";
+
+            const getTypeLabel = (type) => {
+              const map = {
+                bike: "Xe máy",
+                sedan: "4 chỗ",
+                suv: "7 chỗ",
+                luxury: "Xe sang",
+              };
+              return map[type] || type;
+            };
+
+            html = `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600"><tr><th class="p-4">Tài xế</th><th class="p-4">Biển số & Loại xe</th><th class="p-4">Trạng thái</th><th class="p-4">Hành động</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-t bg-orange-50/30"><td class="p-4 font-medium">Trần Văn Đang Chờ</td><td class="p-4">30A-111.11 <br><span class="text-xs text-gray-500">Xe máy</span></td><td class="p-4"><span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs">Chờ duyệt HS</span></td><td class="p-4"><button class="bg-green-600 text-white px-3 py-1 rounded text-sm mr-2 hover:bg-green-700 transition">Duyệt</button><button class="bg-red-100 text-red-600 px-3 py-1 rounded text-sm hover:bg-red-200 transition">Từ chối</button></td></tr>
+                                    ${MOCK_DRIVERS.map(
+                                      (d) => `
+                                        <tr class="border-t"><td class="p-4 font-medium flex items-center gap-2"><img src="${d.avatar}" class="w-8 h-8 rounded-full border border-gray-200 object-cover">${d.name}</td><td class="p-4">${d.plate} <br><span class="text-xs text-gray-500">${getTypeLabel(d.type)}</span></td><td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Active</span></td><td class="p-4 text-gray-400 cursor-pointer hover:text-red-600 transition">Khóa tài khoản</td></tr>
+                                    `,
+                                    ).join("")}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            break;
+
+          case "rides":
+            title = "Giám sát chuyến đi (Live)";
+            html = `
+                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600"><tr><th class="p-4">Mã cuốc</th><th class="p-4">Khách - Tài xế</th><th class="p-4">Lộ trình</th><th class="p-4">Trạng thái</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-t"><td class="p-4 font-bold text-blue-600">#R9921</td><td class="p-4">KH1 -> TX Nguyễn Văn A</td><td class="p-4 text-sm">Nguyễn Trãi -> Lê Lợi</td><td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs flex items-center w-fit gap-1"><i data-lucide="loader" class="w-3 h-3 animate-spin"></i> Đang chạy</span></td></tr>
+                                    <tr class="border-t"><td class="p-4 font-bold text-blue-600">#R9920</td><td class="p-4">KH2 -> TX Trần Thị B</td><td class="p-4 text-sm">Cầu Giấy -> Mỹ Đình</td><td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">Hoàn thành</span></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            break;
+
+          case "promotions":
+            title = "Quản lý Khuyến Mãi & Voucher";
+            html = `
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center">
+                                <input type="text" placeholder="Tìm kiếm mã khuyến mãi..." class="border p-2 rounded w-80 focus:outline-none focus:border-red-800">
+                                <button class="bg-red-800 text-white px-4 py-2 rounded font-medium flex items-center gap-2 hover:bg-red-900 transition"><i data-lucide="plus" class="w-4 h-4"></i> Tạo mã mới</button>
+                            </div>
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600"><tr><th class="p-4">Mã Code</th><th class="p-4">Mô tả</th><th class="p-4">Giá trị giảm</th><th class="p-4">Hạn sử dụng</th><th class="p-4">Trạng thái</th><th class="p-4">Hành động</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-bold text-red-800">GIAM20K</td>
+                                        <td class="p-4">Giảm 20.000đ cho chuyến đi bất kỳ</td>
+                                        <td class="p-4 font-medium">-20,000đ</td>
+                                        <td class="p-4">31/12/2026</td>
+                                        <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Đang chạy</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Sửa / Dừng</td>
+                                    </tr>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-bold text-red-800">WELCOME50</td>
+                                        <td class="p-4">Giảm 50% (tối đa 50k) cho tài khoản mới</td>
+                                        <td class="p-4 font-medium">50%</td>
+                                        <td class="p-4">01/06/2026</td>
+                                        <td class="p-4"><span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs font-bold">Đã hết hạn</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Xem chi tiết</td>
+                                    </tr>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-bold text-red-800">FREESHIP</td>
+                                        <td class="p-4">Miễn phí 2km đầu tiên</td>
+                                        <td class="p-4 font-medium">-Tùy chuyến</td>
+                                        <td class="p-4">15/07/2026</td>
+                                        <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">Đang chạy</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Sửa / Dừng</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            break;
+
+          case "permissions":
+            title = "Phân quyền Hệ thống";
+            html = `
+                        <!-- Roles Overview -->
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-red-800">
+                                <h3 class="font-bold text-lg mb-1">Super Admin</h3>
+                                <p class="text-sm text-gray-500 mb-3">Toàn quyền kiểm soát hệ thống</p>
+                                <div class="flex justify-between items-center text-sm font-medium"><span class="text-gray-600">2 Nhân sự</span> <a href="#" class="text-red-800 hover:underline">Xem chi tiết</a></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-blue-600">
+                                <h3 class="font-bold text-lg mb-1">CSKH / Vận hành</h3>
+                                <p class="text-sm text-gray-500 mb-3">Theo dõi chuyến xe, hỗ trợ User/Driver</p>
+                                <div class="flex justify-between items-center text-sm font-medium"><span class="text-gray-600">5 Nhân sự</span> <a href="#" class="text-blue-600 hover:underline">Xem chi tiết</a></div>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 border-l-4 border-l-green-600">
+                                <h3 class="font-bold text-lg mb-1">Kế toán</h3>
+                                <p class="text-sm text-gray-500 mb-3">Quản lý dòng tiền, yêu cầu rút/nạp</p>
+                                <div class="flex justify-between items-center text-sm font-medium"><span class="text-gray-600">3 Nhân sự</span> <a href="#" class="text-green-600 hover:underline">Xem chi tiết</a></div>
+                            </div>
+                        </div>
+
+                        <!-- Personnel List -->
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            <div class="p-4 border-b flex justify-between items-center">
+                                <h3 class="font-bold text-gray-800">Danh sách nhân sự (Quản trị viên)</h3>
+                                <button class="bg-gray-800 text-white px-4 py-2 rounded font-medium flex items-center gap-2 hover:bg-black transition"><i data-lucide="user-plus" class="w-4 h-4"></i> Thêm nhân sự</button>
+                            </div>
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-gray-600"><tr><th class="p-4">Nhân sự</th><th class="p-4">Email</th><th class="p-4">Vai trò (Role)</th><th class="p-4">Trạng thái</th><th class="p-4">Hành động</th></tr></thead>
+                                <tbody>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-medium flex items-center gap-3"><img src="https://i.pravatar.cc/150?img=11" class="w-8 h-8 rounded-full border border-gray-200">Nguyễn Văn Admin</td>
+                                        <td class="p-4 text-gray-500">admin@goilatoi.vn</td>
+                                        <td class="p-4"><span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold border border-red-200">Super Admin</span></td>
+                                        <td class="p-4"><span class="text-green-600 font-medium">Đang làm việc</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Sửa quyền</td>
+                                    </tr>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-medium flex items-center gap-3"><img src="https://i.pravatar.cc/150?img=5" class="w-8 h-8 rounded-full border border-gray-200">Trần Thị CSKH</td>
+                                        <td class="p-4 text-gray-500">cskh1@goilatoi.vn</td>
+                                        <td class="p-4"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold border border-blue-200">CSKH / Vận hành</span></td>
+                                        <td class="p-4"><span class="text-green-600 font-medium">Đang làm việc</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Sửa quyền</td>
+                                    </tr>
+                                    <tr class="border-t">
+                                        <td class="p-4 font-medium flex items-center gap-3"><img src="https://i.pravatar.cc/150?img=3" class="w-8 h-8 rounded-full border border-gray-200">Lê Văn Kế Toán</td>
+                                        <td class="p-4 text-gray-500">ketoan@goilatoi.vn</td>
+                                        <td class="p-4"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold border border-green-200">Kế toán</span></td>
+                                        <td class="p-4"><span class="text-red-500 font-medium">Tạm khóa</span></td>
+                                        <td class="p-4 text-blue-600 cursor-pointer hover:underline">Sửa quyền</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+            break;
+        }
+
+        document.getElementById("admin-header-title").innerText = title;
+        content.innerHTML = html;
+        lucide.createIcons();
+      }
+
+      // INIT
       document.addEventListener("DOMContentLoaded", () => {
         lucide.createIcons();
-        // Optional: Start at login
-        // navigateTo('login');
       });
     </script>
   </body>
